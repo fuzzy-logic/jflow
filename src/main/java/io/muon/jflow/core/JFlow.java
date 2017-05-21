@@ -73,6 +73,9 @@ public class JFlow {
             System.out.println("jflow next step == " + nextStep);
             if (nextStep == null) running = false;
         }
+        System.out.println("\n**********************************************");
+        System.out.println("JFLOW FINAL RESULT == '" + result + "'");
+        System.out.println("**********************************************\n");
         return result;
     }
 }
