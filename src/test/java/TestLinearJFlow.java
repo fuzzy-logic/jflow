@@ -3,6 +3,8 @@ import io.muon.jflow.core.Action;
 
 
 import static org.junit.Assert.assertEquals;
+
+import io.muon.jflow.core.Predicate;
 import org.junit.Test;
 
 /**
@@ -15,35 +17,52 @@ public class TestLinearJFlow {
     public void testJflow() {
         JFlow flow = new JFlow();
 
-        Action step1 = new HelloStep();
-        Action step2 = new GoodbyeStep();
-        Action step3 = new GoawayStep();
+        Action startStep = new StartStep();
+        Action helloStep = new HelloStep();
+        Action goodbyeStep = new GoawayStep();
 
-        flow.firstStep(step1);
-        flow.addStep(step2);
-        flow.addStep(step3);
-        Object result = flow.enter("gawain");
+        Predicate gmanPredicate = new Predicate() {
+            public boolean check(Object result) {
+                return result.toString().contains("winter");
+            }
+            public String getName() {
+                return "crap weather test";
+            }
+        };
 
-        assertEquals("hello, goodbye, gawain. Please go away.",  result );
+        flow.firstStep(startStep);
+        flow.addStep(startStep.getName(), goodbyeStep, gmanPredicate);
+        flow.addDefaultStep(startStep.getName(), helloStep);
+        Object result = flow.enter("winter");
+
+        assertEquals("Please go away, winter",  result );
+    }
+
+    private class StartStep implements Action {
+        public Object run(Object input) {
+            return input;
+        }
+
+        public String getName() {
+            return "start step";
+        }
     }
 
     private class HelloStep implements Action {
         public Object run(Object input) {
-            return "hello, " + input;
+            return "Hello, I love " + input;
         }
-    }
-
-    private class GoodbyeStep implements Action {
-        public Object run(Object input) {
-            String[] csv = ((String) input).split(",");
-            return csv[0] + ", goodbye," + csv[1];
+        public String getName() {
+            return "default: hello step";
         }
     }
 
     private class GoawayStep implements Action {
         public Object run(Object input) {
-
-            return input + ". Please go away.";
+                return "Please go away, " + input;
+        }
+        public String getName() {
+            return "go away step";
         }
     }
 }

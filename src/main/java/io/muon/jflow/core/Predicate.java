@@ -9,4 +9,6 @@ import java.util.Map;
 public interface Predicate {
 
     public boolean check(Object result);
+
+    public String getName();
 }

@@ -6,4 +6,7 @@ package io.muon.jflow.core;
 public interface Action {
 
     Object run(Object nextStepInput);
+
+    String getName();
+
 }

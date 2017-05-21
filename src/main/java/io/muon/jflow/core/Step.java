@@ -1,8 +1,7 @@
 package io.muon.jflow.core;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import javax.swing.*;
+import java.util.*;
 
 /**
  * Created by gawain on 19/05/2017.
@@ -10,51 +9,63 @@ import java.util.Map;
 public class Step {
 
     Action action;
-    Step firstStep;
+    Step defaultStep;
     Object result;
     Step errorStep = null;
-    boolean branchedStep = false;
+    String name;
     Map<Predicate, Step> steps = new HashMap<Predicate, Step>();
 
-    Step(Action step) {
+    Step(String name, Action step) {
             this.action = step;
+            this.name = name;
+    }
+
+    public Collection<Step> subSteps() {
+        List<Step> steps = new ArrayList<Step>(this.steps.size() + 1);
+        steps.add(defaultStep);
+        steps.addAll(this.steps.values());
+        return steps;
     }
 
     public Step getNextStep() {
-        if (firstStep != null && steps.size() == 0) return firstStep;
+        if (defaultStep != null && steps.size() == 0) return defaultStep;
         if (action == null || result == null) throw new RuntimeException("step must have action set and be run to generate result before next step can be determined");
+        Step returnStep = defaultStep;
         Iterator it = steps.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<Predicate, Step> pair = (Map.Entry)it.next();
             Predicate predicate = pair.getKey();
             Step step = pair.getValue();
+            System.out.println("For step '" + this.name +  "' testing predicate '" + predicate.getName() + "'");
             boolean predicateMatch = predicate.check(result);
-            if (predicateMatch) return step;
-
+            if (predicateMatch) {
+                System.out.println("For step '" + this.name +  "' predicate match! '" + predicate.getName() + "'");
+                System.out.println("For step '" + this.name +  "' next step == '" + step.getName() + "'");
+                returnStep = step;
+            }
         }
-        if (errorStep == null) throw new RuntimeException("no matching predicate for branch and no errorsteo set");
-        return errorStep;
+        //System.out.println("returning step '" + returnStep.getName() + "'");
+        return returnStep;
     }
 
     public Object run(Object input) {
         result = action.run(input);
-        return this;
+        return result;
     }
 
     public Object getResult() {
         return this.result;
     }
 
-    public void addStep(Step branchStep) {
-        // there is only a single non predicated step
-        if (branchedStep || steps.size() > 1) throw new RuntimeException("can only use addStep() with no predicate if it the first and only step with no predicate");
-        firstStep = new Step(action);
+    public void addDefaultStep(Step branchStep) {
+        defaultStep = branchStep;
     }
 
-    public void addStep(Predicate predicate, Step branchStep) {
-        if ( ! branchedStep && firstStep != null && steps.size() == 0) throw new RuntimeException("cannot add branch step with predicate if it the first has no predicate");
-        branchedStep = true;
-        if (steps.size() == 0) firstStep = new Step(action);
+    public boolean hasSingleStep() {
+        return (defaultStep != null && steps.size() < 1);
+    }
+
+    public void addBranchStep(Predicate predicate, Step branchStep) {
         steps.put(predicate, branchStep);
     }
 
@@ -62,4 +73,13 @@ public class Step {
         this.errorStep = step;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
+
+    public String getName() {
+        return name;
+    }
 }

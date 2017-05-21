@@ -15,23 +15,46 @@ public class JFlow {
 
 
     public JFlow firstStep(Action action) {
-        Step step  = new Step(action);
+        Step step  = new Step(action.getName(), action);
         firstStep = step;
         lastStep = step;
         return this;
     }
 
-    public JFlow addStep(Action action) {
-        Step step  = new Step(action);
-        firstStep.addStep(step);
+    public JFlow addStep(String id, Action action, Predicate predicate) {
+        Step step  = new Step(action.getName(), action);
+        Step addToStep = getStepById(id, firstStep);
+        addToStep.addBranchStep(predicate, step);
         lastStep = step;
         return this;
     }
 
-    public JFlow addStep(Action action, Predicate predicate) {
-        firstStep = new Step(action);
+    public JFlow addDefaultStep(String id, Action action) {
+        Step step  = new Step(action.getName(), action);
+        Step addToStep = getStepById(id, firstStep);
+        addToStep.addDefaultStep(step);
+        lastStep = step;
         return this;
     }
+
+    public Step getStepById(String id, Step step) {
+        Step matchingStep = null;
+        if (step.getName() == id) {
+            matchingStep = step;
+        }
+        if (matchingStep != null) return matchingStep;
+
+        for (Step s : step.subSteps()) {
+            Step match = getStepById(id, s);
+            if (match != null) {
+                matchingStep = match;
+                break;
+            }
+        }
+
+        return matchingStep;
+    }
+
 
     public Object enter(Object initialInput) {
         if (firstStep == null) {
@@ -42,8 +65,12 @@ public class JFlow {
         Object input = initialInput;
         Object result = null;
         while(running) {
+            Step currentStep = nextStep;
+            System.out.println("jflow current step == " + nextStep);
             result = nextStep.run(input);
-            nextStep = nextStep.getNextStep();
+            System.out.println("jflow result == " + result);
+            nextStep = currentStep.getNextStep();
+            System.out.println("jflow next step == " + nextStep);
             if (nextStep == null) running = false;
         }
         return result;
