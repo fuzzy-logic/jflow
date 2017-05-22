@@ -20,6 +20,7 @@ public class TestLinearJFlow {
     public void testJflow() throws ExecutionException, InterruptedException {
         // Create the desired flow and branches
         Action<String, String> startStep = Action.sync("start step", i -> i);
+        Action<String, String> nextStep = Action.sync("next step", i -> i);
         Action<String, String> emphasise = Action.sync("emphasise", i -> i + "!");
         Action<String, String> sayComeAgainAnother = Action.sync("rainy step", i -> i + " - rain, rain, go away!");
         Action<String, String> sayHello = Action.sync("hello step", i -> "Hello, I love " + i);
@@ -28,8 +29,13 @@ public class TestLinearJFlow {
         Action<String, String> sayGoAway = Action.sync("go away step", i -> "Please go away, " + i);
 
         Flow<String, String> flow = Flow.of(startStep)
-                .add(Flow.of(sayHello).add(emphasise).branch(isRainy, sayComeAgainAnother))
-                .branch(isWinter, sayGoAway);
+                .add(nextStep)
+                .add(Flow.branch(isWinter,
+                        Flow.of(sayGoAway),
+                        Flow.of(sayHello)
+                                .add(Flow.branch(isRainy,
+                                        Flow.of(sayComeAgainAnother),
+                                        Flow.of(emphasise)))));
 
         System.out.println(flow.describe());
 
