@@ -1,4 +1,4 @@
-import io.muon.jflow.core.JFlow;
+import io.muon.jflow.core.Flow;
 import io.muon.jflow.core.Action;
 
 
@@ -7,6 +7,9 @@ import static org.junit.Assert.assertEquals;
 import io.muon.jflow.core.Predicate;
 import org.junit.Test;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+
 /**
  * Created by gawain on 19/05/2017.
  */
@@ -14,64 +17,36 @@ public class TestLinearJFlow {
 
 
     @Test
-    public void testJflow() {
-
-        // Actions and predicates
-        Action startStep = new StartStep();
-        Action helloStep = new HelloStep();
-        Action goAwayStep = new GoawayStep();
-        Predicate isWinterPredicate = new IsWinterPredicate();
-
+    public void testJflow() throws ExecutionException, InterruptedException {
         // Create the desired flow and branches
-        JFlow flow = new JFlow();
-        flow.firstStep(startStep);
-        flow.addStep(startStep.getName(), goAwayStep, isWinterPredicate);
-        flow.addDefaultStep(startStep.getName(), helloStep);
+        Action<String, String> startStep = Action.sync("start step", i -> i);
+        Action<String, String> nextStep = Action.sync("next step", i -> i);
+        Action<String, String> emphasise = Action.sync("emphasise", i -> i + "!");
+        Action<String, String> sayComeAgainAnother = Action.sync("rainy step", i -> i + " - rain, rain, go away!");
+        Action<String, String> sayHello = Action.sync("hello step", i -> "Hello, I love " + i);
+        Predicate<String> isRainy = Predicate.sync("rainy test", i -> i.contains("rainy"));
+        Predicate<String> isWinter = Predicate.sync("winter test", i -> i.contains("winter"));
+        Action<String, String> sayGoAway = Action.sync("go away step", i -> "Please go away, " + i);
 
-        Object result1 = flow.enter("winter");
+        Flow<String, String> flow = Flow.of(startStep)
+                .add(nextStep)
+                .add(Flow.branch(isWinter,
+                        Flow.of(sayGoAway),
+                        Flow.of(sayHello)
+                                .add(Flow.branch(isRainy,
+                                        Flow.of(sayComeAgainAnother),
+                                        Flow.of(emphasise)))));
+
+        System.out.println(flow.describe());
+
+        String result1 = flow.run("winter").get();
         assertEquals("Please go away, winter",  result1 );
 
-        Object result2 = flow.enter("summer");
-        assertEquals("Hello, I love summer",  result2 );
+        String result2 = flow.run("summer").get();
+        assertEquals("Hello, I love summer!",  result2 );
+
+        String result3 = flow.run("rainy summer").get();
+        assertEquals("Hello, I love rainy summer - rain, rain, go away!",  result3);
     }
 
-
-
-    // Action and predicate implementations
-    private class StartStep implements Action {
-        public Object run(Object input) {
-            return input;
-        }
-
-        public String getName() {
-            return "start step";
-        }
-    }
-
-    private class HelloStep implements Action {
-        public Object run(Object input) {
-            return "Hello, I love " + input;
-        }
-        public String getName() {
-            return "default: hello step";
-        }
-    }
-
-    private class GoawayStep implements Action {
-        public Object run(Object input) {
-                return "Please go away, " + input;
-        }
-        public String getName() {
-            return "go away step";
-        }
-    }
-
-    private class IsWinterPredicate implements Predicate {
-        public boolean check(Object result) {
-            return result.toString().contains("winter");
-        }
-        public String getName() {
-            return "crap weather test";
-        }
-    }
 }
