@@ -5,7 +5,9 @@
 I agree, but after spending hours evaluating just a small fraction of solutions I found two common themes:
 
 1.) The space is dominated by over engineered GUI driven workflows for non developers
+
 2.) Developers still actually have to do the tricky stuff and now the APIs are corrupted by the compromises of point 1
+
 3.) Nothing designed from the ground up tto help deal with devloper quality of life issues
 
 ### WHat is JFLOW
