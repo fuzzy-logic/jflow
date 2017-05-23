@@ -2,17 +2,19 @@
 
 ### why ANOTHER workflow solution?
 
-I agree, but after spending hours evulating just a small fraction of solutions I found two common themes:
+I agree, but after spending hours evaluating just a small fraction of solutions I found two common themes:
 
-1.) Over engineering GUI driven workflow for non developers
+1.) The space is dominated by over engineered GUI driven workflows for non developers
 2.) Developers still actually have to do the tricky stuff and now the APIs are corrupted by the compromises of point 1
+3.) Nothing designed from the ground up tto help deal with devloper quality of life issues
 
 ### WHat is JFLOW
 
+In any software system, epsecially a microservices system, at some point you're going to have to orchestrate a bunch of calls, transform some data, and make some decisions as to what steps to perform next depending on the returned data. 
 
-In any software system, epsecially a microservices one, at somepoint you're going to have to orchestrate a bunch of calls, transform some data, and make some decisions as to what steps to perform next depending on the returned data. This is the bread and butter of day to day coders, bascially, if-this-then-that for the enterprise. All to often the code decends in a typical state of lazy anarchy (think mad max) rather than ordered civility (err, does that actually exist yet?).
+This is the bread and butter of day to day coders in real life, it's not particularly glamourous, but it must be done. Bascially, JFlow is an if-this-then-that for the enterprise. All to often the code decends in a typical state of lazy anarchy (think mad max) rather than ordered civility (err, does that actually exist yet?), object models are generated, code is shared, modules are coupled, and develoeprs play whack a mole with side effects. You've now inadvertantly falled in to the complexity doamin.
 
-This is where jflow was imaculately conceived from.
+This is where jflow was imaculately conceived from...
 
 JFlow is a lightweight simple api to compose actions as easily decoupled steps in a wider logically branching workflow just for developers. There's no gui driven workflows, there's no non technical interface. It's programmed for programmers.
 
